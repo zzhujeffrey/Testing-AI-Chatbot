@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatGPT Survey Assistant</title>
+    <title>ChatGPT Survey Helper</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
         #chatbox { width: 80%; height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin: auto; }
@@ -18,6 +18,8 @@
     <button onclick="sendMessage()">Send</button>
 
     <script>
+        const apiKey = "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"; // 🔴 Replace this with your actual OpenAI API key
+
         async function sendMessage() {
             const input = document.getElementById("userInput").value;
             if (!input) return;
@@ -29,7 +31,7 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer YOUR_OPENAI_API_KEY"
+                    "Authorization": `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
                     model: "gpt-4",
