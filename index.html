@@ -3,65 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatGPT Survey Helper</title>
+    <title>JeffBot - Your AI Survey Helper</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        #chatbox { width: 80%; height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin: auto; text-align: left; }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; background-color: #f4f4f4; }
+        h2 { color: #333; }
+        #chatbox { width: 80%; height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin: auto; text-align: left; background: white; }
         #userInput { width: 70%; padding: 10px; margin-top: 10px; }
-        button { padding: 10px; }
+        button { padding: 10px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
         .user { color: blue; font-weight: bold; }
         .bot { color: green; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h2>ChatGPT Survey Helper</h2>
+    <h2>JeffBot - AI Survey Helper</h2>
     <div id="chatbox">
-        <p><b>ChatGPT:</b> Hello! How can I assist you today?</p>
+        <p><b class="bot">JeffBot:</b> Hello! How can I assist you today?</p>
     </div>
     <input type="text" id="userInput" placeholder="Type your question...">
     <button onclick="sendMessage()">Send</button>
 
     <script>
-        const apiKey = "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"; // 🔴 Replace with your API key (temporary!)
-        let chatHistory = [];
+        const backendURL = "https://chatgpt-backend-t7ho.onrender.com"; // 🔴 REPLACE with your actual Render backend URL!
 
         async function sendMessage() {
             const input = document.getElementById("userInput").value;
             if (!input) return;
 
-            chatHistory.push({ role: "user", content: input });
-            updateChatBox("user", input);
-
+            document.getElementById("chatbox").innerHTML += `<p><b class="user">You:</b> ${input}</p>`;
             document.getElementById("userInput").value = "";
 
             try {
-                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                const response = await fetch(`${backendURL}/chat`, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: "gpt-4",
-                        messages: chatHistory
-                    })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: input })
                 });
 
                 const data = await response.json();
-                const reply = data.choices[0].message.content;
-                chatHistory.push({ role: "assistant", content: reply });
-                updateChatBox("bot", reply);
+                document.getElementById("chatbox").innerHTML += `<p><b class="bot">JeffBot:</b> ${data.reply}</p>`;
             } catch (error) {
-                updateChatBox("bot", "Error: Could not connect to ChatGPT.");
+                document.getElementById("chatbox").innerHTML += `<p><b class="bot">JeffBot:</b> Error: Could not reach the server.</p>`;
             }
-        }
-
-        function updateChatBox(sender, message) {
-            const chatbox = document.getElementById("chatbox");
-            const newMessage = document.createElement("p");
-            newMessage.innerHTML = `<b class="${sender}">${sender === "user" ? "You" : "ChatGPT"}:</b> ${message}`;
-            chatbox.appendChild(newMessage);
-            chatbox.scrollTop = chatbox.scrollHeight;
         }
     </script>
 </body>
