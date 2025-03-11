@@ -24,7 +24,15 @@
     <button onclick="sendMessage()">Send</button>
 
     <script>
-        const backendURL = "https://chatgpt-backend-t7ho.onrender.com"; // 🔴 REPLACE with your actual Render backend URL!
+        const backendURL = "https://chatgpt-backend-t7ho.onrender.com";  // 🔴 Replace with your actual Render backend URL
+
+        // 🔹 Get surveySessionId from Qualtrics URL or generate a random one
+        function getSessionId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get("surveySessionId") || "session_" + Math.random().toString(36).substr(2, 9);
+        }
+
+        let sessionId = getSessionId();  // Each survey gets a unique chat session
 
         async function sendMessage() {
             const input = document.getElementById("userInput").value;
@@ -37,7 +45,7 @@
                 const response = await fetch(`${backendURL}/chat`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: input })
+                    body: JSON.stringify({ message: input, sessionId })  // 🔹 Send surveySessionId to backend
                 });
 
                 const data = await response.json();
