@@ -13,6 +13,20 @@
         button:hover { background-color: #0056b3; }
         .user { color: blue; font-weight: bold; }
         .bot { color: green; font-weight: bold; }
+        .typing { font-style: italic; color: gray; }
+
+        /* Optional animated dot effect */
+        .dots::after {
+            content: '';
+            animation: dots 1.5s steps(3, end) infinite;
+        }
+
+        @keyframes dots {
+            0%   { content: ''; }
+            33%  { content: '.'; }
+            66%  { content: '..'; }
+            100% { content: '...'; }
+        }
     </style>
 </head>
 <body>
@@ -20,19 +34,21 @@
     <div id="chatbox">
         <p><b class="bot">JeffBot:</b> Hello! How can I assist you today?</p>
     </div>
+    <!-- Typing indicator appears when bot is processing a response -->
+    <p id="typingIndicator" class="typing" style="display: none;"><b class="bot">JeffBot:</b> <span class="dots"></span></p>
+
     <input type="text" id="userInput" placeholder="Type your question...">
     <button onclick="sendMessage()">Send</button>
 
     <script>
-        const backendURL = "https://chatgpt-backend-t7ho.onrender.com";  // 🔴 Replace with your actual Render backend URL
+        const backendURL = "https://chatgpt-backend-t7ho.onrender.com";
 
-        // 🔹 Get surveySessionId from Qualtrics URL or generate a random one
         function getSessionId() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get("surveySessionId") || "session_" + Math.random().toString(36).substr(2, 9);
         }
 
-        let sessionId = getSessionId();  // Each survey gets a unique chat session
+        let sessionId = getSessionId();
 
         async function sendMessage() {
             const input = document.getElementById("userInput").value;
@@ -41,16 +57,25 @@
             document.getElementById("chatbox").innerHTML += `<p><b class="user">You:</b> ${input}</p>`;
             document.getElementById("userInput").value = "";
 
+            // Show "typing..." dots
+            document.getElementById("typingIndicator").style.display = "block";
+
             try {
                 const response = await fetch(`${backendURL}/chat`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: input, sessionId })  // 🔹 Send surveySessionId to backend
+                    body: JSON.stringify({ message: input, sessionId })
                 });
 
                 const data = await response.json();
+
+                // Hide typing indicator
+                document.getElementById("typingIndicator").style.display = "none";
+
+                // Display bot reply
                 document.getElementById("chatbox").innerHTML += `<p><b class="bot">JeffBot:</b> ${data.reply}</p>`;
             } catch (error) {
+                document.getElementById("typingIndicator").style.display = "none";
                 document.getElementById("chatbox").innerHTML += `<p><b class="bot">JeffBot:</b> Error: Could not reach the server.</p>`;
             }
         }
