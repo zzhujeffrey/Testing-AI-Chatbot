@@ -66,13 +66,15 @@
 
   <!-- Chat area (initially hidden) -->
   <div id="chatSection" style="display: none;">
-    <div id="chatbox"></div>
+    <div id="chatbox">
+      <p><b class="bot">Bot:</b> Hello! How can I help you today?</p>
+    </div>
     <input type="text" id="userInput" placeholder="Type your question..." disabled />
     <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
   </div>
 
   <script>
-    const backendURL = "https://chatgpt-backend-nm64.onrender.com";
+    const backendURL = "https://chatgpt-backend-t7ho.onrender.com";
 
     function getSessionId() {
       const urlParams = new URLSearchParams(window.location.search);
