@@ -1,84 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JeffBot - Your AI Survey Helper</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; background-color: #f4f4f4; }
-        h2 { color: #333; }
-        #chatbox { width: 80%; height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin: auto; text-align: left; background: white; }
-        #userInput { width: 70%; padding: 10px; margin-top: 10px; }
-        button { padding: 10px; background-color: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .user { color: blue; font-weight: bold; }
-        .bot { color: green; font-weight: bold; }
-        .typing { font-style: italic; color: gray; }
-
-        /* Optional animated dot effect */
-        .dots::after {
-            content: '';
-            animation: dots 1.5s steps(3, end) infinite;
-        }
-
-        @keyframes dots {
-            0%   { content: ''; }
-            33%  { content: '.'; }
-            66%  { content: '..'; }
-            100% { content: '...'; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bot - Your AI Survey Helper</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+      background-color: #f4f4f4;
+    }
+    h2 {
+      color: #333;
+    }
+    #chatbox {
+      width: 80%;
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: auto;
+      text-align: left;
+      background: white;
+    }
+    #userInput {
+      width: 70%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .user {
+      color: blue;
+      font-weight: bold;
+    }
+    .bot {
+      color: green;
+      font-weight: bold;
+    }
+    #emailInput {
+      padding: 10px;
+      width: 70%;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-    <h2>JeffBot - AI Survey Helper</h2>
+  <h2>Bot - AI Survey Helper</h2>
+
+  <!-- Email verification -->
+  <div>
+    <input type="email" id="emailInput" placeholder="Enter your UW email (@uw.edu)" />
+    <button onclick="validateEmail()">Submit</button>
+    <p id="emailError" style="color: red;"></p>
+  </div>
+
+  <!-- Chat area (initially hidden) -->
+  <div id="chatSection" style="display: none;">
     <div id="chatbox">
-        <p><b class="bot">JeffBot:</b> Hello! How can I assist you today?</p>
+      <p><b class="bot">Bot:</b> Hello! How can I help you today?</p>
     </div>
-    <!-- Typing indicator appears when bot is processing a response -->
-    <p id="typingIndicator" class="typing" style="display: none;"><b class="bot">JeffBot:</b> <span class="dots"></span></p>
+    <input type="text" id="userInput" placeholder="Type your question..." disabled />
+    <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
+  </div>
 
-    <input type="text" id="userInput" placeholder="Type your question...">
-    <button onclick="sendMessage()">Send</button>
+  <script>
+    const backendURL = "https://chatgpt-backend-nm64.onrender.com";
 
-    <script>
-        const backendURL = "https://chatgpt-backend-t7ho.onrender.com";
+    function getSessionId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get("surveySessionId") || "session_" + Math.random().toString(36).substr(2, 9);
+    }
 
-        function getSessionId() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get("surveySessionId") || "session_" + Math.random().toString(36).substr(2, 9);
-        }
+    let sessionId = getSessionId();
+    let userEmail = "";
 
-        let sessionId = getSessionId();
+    function validateEmail() {
+      const email = document.getElementById("emailInput").value.trim();
+      const errorMsg = document.getElementById("emailError");
 
-        async function sendMessage() {
-            const input = document.getElementById("userInput").value;
-            if (!input) return;
+      if (/^[^\s@]+@uw\.edu$/.test(email)) {
+        userEmail = email;
+        errorMsg.textContent = "";
+        document.getElementById("chatSection").style.display = "block";
+        document.getElementById("userInput").disabled = false;
+        document.getElementById("sendBtn").disabled = false;
+      } else {
+        errorMsg.textContent = "Please enter a valid @uw.edu email address.";
+      }
+    }
 
-            document.getElementById("chatbox").innerHTML += `<p><b class="user">You:</b> ${input}</p>`;
-            document.getElementById("userInput").value = "";
+    async function sendMessage() {
+      const input = document.getElementById("userInput").value;
+      if (!input) return;
 
-            // Show "typing..." dots
-            document.getElementById("typingIndicator").style.display = "block";
+      document.getElementById("chatbox").innerHTML += `<p><b class="user">You:</b> ${input}</p>`;
+      document.getElementById("userInput").value = "";
 
-            try {
-                const response = await fetch(`${backendURL}/chat`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: input, sessionId })
-                });
+      try {
+        const response = await fetch(`${backendURL}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: input, sessionId, userEmail })
+        });
 
-                const data = await response.json();
-
-                // Hide typing indicator
-                document.getElementById("typingIndicator").style.display = "none";
-
-                // Display bot reply
-                document.getElementById("chatbox").innerHTML += `<p><b class="bot">JeffBot:</b> ${data.reply}</p>`;
-            } catch (error) {
-                document.getElementById("typingIndicator").style.display = "none";
-                document.getElementById("chatbox").innerHTML += `<p><b class="bot">JeffBot:</b> Error: Could not reach the server.</p>`;
-            }
-        }
-    </script>
+        const data = await response.json();
+        document.getElementById("chatbox").innerHTML += `<p><b class="bot">Bot:</b> ${data.reply}</p>`;
+      } catch (error) {
+        document.getElementById("chatbox").innerHTML += `<p><b class="bot">Bot:</b> Error: Could not reach the server.</p>`;
+      }
+    }
+  </script>
 </body>
 </html>
