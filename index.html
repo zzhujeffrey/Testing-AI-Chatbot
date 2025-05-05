@@ -66,9 +66,7 @@
 
   <!-- Chat area (initially hidden) -->
   <div id="chatSection" style="display: none;">
-    <div id="chatbox">
-      <p><b class="bot">Bot:</b> Hello! How can I help you today?</p>
-    </div>
+    <div id="chatbox"></div>
     <input type="text" id="userInput" placeholder="Type your question..." disabled />
     <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
   </div>
@@ -94,6 +92,9 @@
         document.getElementById("chatSection").style.display = "block";
         document.getElementById("userInput").disabled = false;
         document.getElementById("sendBtn").disabled = false;
+
+        // Show initial greeting message
+        document.getElementById("chatbox").innerHTML = `<p><b class="bot">Bot:</b> Hello! How can I help you today?</p>`;
       } else {
         errorMsg.textContent = "Please enter a valid @uw.edu email address.";
       }
